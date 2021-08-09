@@ -1,5 +1,4 @@
 const outputs = [];
-const k = 3;
 
 function onScoreUpdate(dropPosition, bounciness, size, bucketLabel) {
     // Ran every time a balls drops into a bucket
@@ -8,14 +7,37 @@ function onScoreUpdate(dropPosition, bounciness, size, bucketLabel) {
 }
 
 function runAnalysis() {
-    const bucket = knn(outputs);
+    const testSetSize = 100;
+    const [testSet, trainingSet] = splitDataset(outputs, testSetSize);
 
-        console.log("Your point wiill prob fall into", bucket)
+    // let numberCorrect = 0;
+    // for (let i = 0; i < testSet.length; i++) {
+    //   const bucket = knn(trainingSet, testSet[i][0]);
+    //   if (bucket === testSet[i][3]) {
+    //     numberCorrect++;
+    //   };
+    // };
+
+
+    _.range(1, 20).forEach(k => {
+        const accuracy = _.chain(testSet)
+            .filter(testPoint => knn(trainingSet, _.initial(testPoint), k) === testPoint[3])
+            .size()
+            .divide(testSetSize)
+            .value();
+
+        console.log("For k of", k, "Accuracy is:", accuracy);
+    });
 };
 
+
 function knn(data, point) {
-return _.chain(data)
-        .map(row => [distance(row[0], point), row[3]])
+    // Note: Point has 3 values because you want to be able to pass in features later and get a predicted value
+    return _.chain(data)
+        .map(row => [
+            distance(_.initial(row), point),
+            _.last(row)
+        ])
         .sortBy(row => row[0])
         .slice(0, k)
         .countBy(row => row[1])
@@ -33,10 +55,10 @@ function distance(pointA, pointB) {
 };
 
 function splitDataset(data, testCount) {
-  const shuffled = _.shuffle(data);
+    const shuffled = _.shuffle(data);
 
-  const testSet = _.slice(shuffled, 0, testCount);
-  constTrainingSet = _.slice(shuffled, testCount);
+    const testSet = _.slice(shuffled, 0, testCount);
+    const trainingSet = _.slice(shuffled, testCount);
 
-  return [testSet, trainingSet];
+    return [testSet, trainingSet];
 };
