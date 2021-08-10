@@ -31,13 +31,14 @@ function runAnalysis() {
 };
 
 
-function knn(data, point) {
-    // Note: Point has 3 values because you want to be able to pass in features later and get a predicted value
+function knn(data, point, k) {
     return _.chain(data)
-        .map(row => [
-            distance(_.initial(row), point),
-            _.last(row)
-        ])
+        .map(row => {
+            return [
+                distance(_.initial(row), point),
+                _.last(row)
+            ]
+        })
         .sortBy(row => row[0])
         .slice(0, k)
         .countBy(row => row[1])
@@ -51,7 +52,12 @@ function knn(data, point) {
 
 
 function distance(pointA, pointB) {
-    return Math.abs(pointA - pointB);
+    // return Math.abs(pointA - pointB);
+    return _.chain(pointA)
+        .zip(pointB)
+        .map(([a, b]) => (a - b) ** 2)
+        .sum()
+        .value() ** .5;
 };
 
 function splitDataset(data, testCount) {
@@ -62,3 +68,8 @@ function splitDataset(data, testCount) {
 
     return [testSet, trainingSet];
 };
+
+
+function knn2(data, point) {
+
+}
